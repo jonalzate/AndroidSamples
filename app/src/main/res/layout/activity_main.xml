@@ -13,28 +13,78 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/textConfidence"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:text=""
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/button_rounded_corner"/>
+    <TextView
+        android:id="@+id/textObject1"
+        android:layout_width="172dp"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="24sp"
+        android:gravity="center"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:layout_toStartOf="@+id/textConfidence"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/button_rounded_corner"/>
+
+    <TextView
+        android:id="@+id/textObject2"
+        android:layout_width="172dp"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="24sp"
+        android:gravity="center"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:layout_below="@+id/textObject1"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="56dp"
+        android:background="@drawable/button_rounded_corner"/>
+
+    <ImageButton
+        android:id="@+id/videoOnlineButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="8dp"
+        android:src="@mipmap/btn_video_online"
+        android:background="@android:color/transparent"/>
     <Button
         android:id="@+id/cameraButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Camera"
-        tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="429dp"
+        android:text="Recognize"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/videoOnlineButton"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/menuButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Menu"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="38dp" />
+        android:layout_marginBottom="8dp" />
 
-    <Button
-        android:id="@+id/videoOnlineButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:layout_editor_absoluteX="276dp"
-        tools:layout_editor_absoluteY="433dp"
-        android:layout_alignTop="@+id/cameraButton"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="23dp"
-        android:background="@mipmap/btn_video_online"/>
+
 
 
 
