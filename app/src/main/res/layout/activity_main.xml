@@ -36,7 +36,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:layout_toStartOf="@+id/textConfidence"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="8dp"
         android:background="@drawable/button_rounded_corner"/>
 
     <TextView
@@ -51,7 +51,7 @@
         android:layout_below="@+id/textObject1"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="56dp"
+        android:layout_marginEnd="48dp"
         android:background="@drawable/button_rounded_corner"/>
 
     <ImageButton

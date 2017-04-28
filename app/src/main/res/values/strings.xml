@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Camera2UtubeSample</string>
+    <string name="stopLabel">stop learning</string>
+    <string name="recognizeLabel">recognize</string>
+    <string name="learnLabel">learn</string>
+    <string name="stopRecognizeLabel">stop recognizing</string>
 </resources>
