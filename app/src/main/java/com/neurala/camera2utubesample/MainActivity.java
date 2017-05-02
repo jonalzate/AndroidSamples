@@ -2,6 +2,7 @@ package com.neurala.camera2utubesample;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
@@ -20,8 +21,10 @@ import android.media.ImageReader;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +34,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,6 +59,14 @@ public class MainActivity extends AppCompatActivity implements RecognizerInterfa
     private TextView mTextObject1;
     private TextView mTextObject2;
     private TextView mTextConfidence;
+
+    // String names for saved object
+    public String mSavedObject;
+
+    // Alert dialogs
+    public AlertDialog mAddObjectDialog;
+    private AlertDialog mLearnObjectAlert;
+    private AlertDialog mNameErrorAlert;
 
     // Neurala Recognizer
     public Recognizer mRecognizer;
@@ -216,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements RecognizerInterfa
         // initialize camera manager
         mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         // initialize recognizer once video is visible on screen
-        //initializeRecognizer();
+        initializeRecognizer();
 
         // set click listener for button
         mRecordButton.setOnClickListener(new View.OnClickListener() {
@@ -241,16 +253,19 @@ public class MainActivity extends AppCompatActivity implements RecognizerInterfa
         mRecognizerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!(mRecognizer.recognizerState == ERecognizerState.eLearningObject)){
+                if(!(mRecognizer.recognizerState == ERecognizerState.eLearningObject))
+                {
+                    // add something fragment dialog
+                    addSomethingDialog();
                     // stop learning
-//                    mRecognizer.stopLearning();
+                    mRecognizer.stopLearning();
 
                     mRecognizerButton.setText(R.string.recognizeLabel);
                 } else {
                     Log.d(TAG, "Stop Learning");
 
                     mClassNames = mRecognizer.classNames();
-//                    mRecognizer.stopRecognizing();
+                    mRecognizer.stopRecognizing();
 
                     mRecognizerButton.setText(R.string.stopRecognizeLabel);
                 }
@@ -284,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements RecognizerInterfa
                 @Override
                 public void onImageAvailable(ImageReader reader)
                 {
+                    Log.d(TAG, "Image available... passing it to recognizer");
                     Image mImage = null;
                     int imageFormat = reader.getImageFormat();
 
@@ -291,14 +307,14 @@ public class MainActivity extends AppCompatActivity implements RecognizerInterfa
                         mImage = reader.acquireLatestImage();
 
 
-                        if(imageFormat != ImageFormat.YUV_420_888)
+                        if(imageFormat != ImageFormat.NV21)
                         {
                             // not YUV format, notify user
                             Log.d(TAG, "Wrong Image format, not YUV_420");
                         } else {
                             ByteBuffer byteBuffer = mImage.getPlanes()[0].getBuffer();
                             byte [] bytes = new byte[byteBuffer.remaining()];
-                            // mRecognizer.pushFrame(bytes, reader.getWidth(), reader.getHeight());
+                             mRecognizer.pushFrame(bytes, reader.getWidth(), reader.getHeight());
                         }
 
                     } finally {
@@ -464,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements RecognizerInterfa
             // add the preview surface as target display
             mCaptureRequestBuilder.addTarget(previewSurface);
             // add the preview surface as a target to the ImageReader
-            mCaptureRequestBuilder.addTarget(mImageReader.getSurface());
+//            mCaptureRequestBuilder.addTarget(mImageReader.getSurface());
             // create a capture session from camera device and use a capture session call back
             // to notify state of request
             mCameraDevice.createCaptureSession(Arrays.asList(previewSurface), new CameraCaptureSession.StateCallback() {
@@ -610,6 +626,144 @@ public class MainActivity extends AppCompatActivity implements RecognizerInterfa
 
         }
 
+
+    }
+
+    // Add something dialog is an alert dialog to guide user through the process
+    // of add an object to recognizer
+    public void addSomethingDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Learn Object")
+                .setPositiveButton("Learn", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // start new dialog fragment with input text
+                        startLearnObjectFragment();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // keep recognizer working
+                        keepRecognizerWorking();
+
+                        mAddObjectDialog.dismiss();
+                    }
+                });
+
+        mAddObjectDialog = builder.create();
+        mAddObjectDialog.show();
+
+    }
+
+    // starts alert dialog when user is learning an object
+    private void startLearnObjectFragment()
+    {
+        // text input view
+        final EditText input = new EditText(this);
+
+        // build alert dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter name:")
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // get input text
+                        String savedObject = input.getText().toString();
+                        // save object th
+                        saveObject(savedObject);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // keep recognizer working
+                        keepRecognizerWorking();
+
+                        mLearnObjectAlert.dismiss();
+                    }
+                })
+        .setView(input);
+
+        mLearnObjectAlert = builder.create();
+        mLearnObjectAlert.show();
+
+
+    }
+
+    // add saved object to arraylist
+    private void saveToArray(String name)
+    {
+
+        // add name to recognizer array
+        mClassNamesArray.add(name);
+
+        // save name to share preferences or to device's memory
+    }
+
+    // learn object method
+    public void saveObject(String text)
+    {
+        // check if a class with this name exists
+        if(mClassNamesArray.contains(text)){
+            // pop up warning to user and don't save
+            showErrorRenameDialog();
+            return;
+        }
+
+        // Get the string with the name of the saved object
+        mSavedObject = text;
+        Toast.makeText(this, "Object: " + mSavedObject + "saved.", Toast.LENGTH_SHORT).show();
+
+        // save string to array to be display as an edit option
+        saveToArray(mSavedObject);
+
+        // start learning
+        mRecognizer.startLearning(mSavedObject, false);
+
+    }
+
+    private void showErrorRenameDialog(){
+        // show dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Naming Error")
+                .setMessage("The name entered already exists. Please enter a new name")
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // display learn object fragment to enter new name
+                        startLearnObjectFragment();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mNameErrorAlert.dismiss();
+                        mRecognizerButton.setText("Learn");
+                    }
+                })
+                .setCancelable(true);
+        mNameErrorAlert = builder.create();
+        mNameErrorAlert.show();
+    }
+
+    public void keepRecognizerWorking(){
+        // start recognizer
+        if(mClassNames.length > 0){
+            mRecognizer.startRecognizing();
+
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    mRecognizerButton.setText(R.string.stopRecognizeLabel);
+                }
+            });
+        } else {
+            Toast.makeText(this, "No Learned objects, cannot start recognizing", Toast.LENGTH_SHORT).show();
+        }
+
+        // change button text
 
     }
 }
